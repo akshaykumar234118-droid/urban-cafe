@@ -1,0 +1,24 @@
+const items=[
+{id:1,name:"Cappuccino",cat:"coffee",price:140,desc:"Rich espresso with silky steamed milk.",img:"photo-1572449059183-0b7b8c5c5c5c"},
+{id:2,name:"Cold Coffee",cat:"coffee",price:160,desc:"Chilled, creamy and perfectly refreshing.",img:"photo-1461023058943-07fcbe16d735"},
+{id:3,name:"Masala Chai",cat:"coffee",price:60,desc:"A warm cup brewed with Indian spices.",img:"photo-1571934811356-5cc061b6821f"},
+{id:4,name:"Classic Veg Sandwich",cat:"bites",price:130,desc:"Toasted bread, crisp veggies and house spread.",img:"photo-1528735602780-2552fd46c7af"},
+{id:5,name:"French Fries",cat:"bites",price:110,desc:"Golden, crispy fries with a dip.",img:"photo-1573080496219-bb080dd4f877"},
+{id:6,name:"Paneer Tikka",cat:"bites",price:220,desc:"Smoky paneer bites with mint chutney.",img:"photo-1567188040759-fb8a883dc6d8"},
+{id:7,name:"Margherita Pizza",cat:"mains",price:260,desc:"Classic cheese, tomato and basil.",img:"photo-1579751626657-72bc17010498"},
+{id:8,name:"White Sauce Pasta",cat:"mains",price:240,desc:"Creamy pasta with herbs and vegetables.",img:"photo-1473093295043-cdd812d0e601"},
+{id:9,name:"Veg Burger",cat:"mains",price:170,desc:"Crispy veggie patty with fresh toppings.",img:"photo-1568901346375-23c9450c58cd"},
+{id:10,name:"Chocolate Brownie",cat:"dessert",price:120,desc:"Fudgy chocolate goodness, baked fresh.",img:"photo-1606313564200-e75d5e30476c"},
+{id:11,name:"Cheesecake Slice",cat:"dessert",price:180,desc:"Smooth, creamy and beautifully sweet.",img:"photo-1533134242443-d4fd215305ad"},
+{id:12,name:"Chocolate Shake",cat:"coffee",price:170,desc:"Thick chocolate shake topped with love.",img:"photo-1572490122747-3968b75cc699"}];
+let cart={};
+const money=n=>"₹"+n;
+function card(item){return `<article class="food-card"><div class="food-img" style="background-image:url('https://images.unsplash.com/${item.img}?w=600&auto=format&fit=crop')"><span class="food-tag">${item.cat.toUpperCase()}</span></div><div class="food-info"><h3>${item.name}</h3><p>${item.desc}</p><div class="food-bottom"><b>${money(item.price)}</b><button class="add-btn" onclick="addItem(${item.id})">+ Add</button></div></div></article>`}
+function renderMenu(target,filter="all"){const el=document.getElementById(target);if(el)el.innerHTML=items.filter(x=>filter==="all"||x.cat===filter).map(card).join("")}
+function addItem(id){cart[id]=(cart[id]||0)+1;renderCart()}
+function changeQty(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];renderCart()}
+function renderCart(){const el=document.getElementById("cart-items");if(!el)return;let count=Object.values(cart).reduce((a,b)=>a+b,0),subtotal=items.reduce((s,x)=>s+x.price*(cart[x.id]||0),0),pack=count?10:0;document.getElementById("cart-count").textContent=count+" items";el.innerHTML=count?items.filter(x=>cart[x.id]).map(x=>`<div class="cart-row"><div><b>${x.name}</b><small>${money(x.price)} each</small></div><div class="qty"><button onclick="changeQty(${x.id},-1)">−</button><span>${cart[x.id]}</span><button onclick="changeQty(${x.id},1)">+</button></div></div>`).join(""):`<div class="empty-cart">🛍️<b>Your bag is waiting</b><span>Add something tasty to get started.</span></div>`;document.getElementById("subtotal").textContent=money(subtotal);document.getElementById("packaging").textContent=money(pack);document.getElementById("total").textContent=money(subtotal+pack);document.getElementById("button-total").textContent=money(subtotal+pack)}
+document.querySelectorAll(".filters").forEach(group=>group.addEventListener("click",e=>{let b=e.target.closest(".filter");if(!b)return;group.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");let target=document.getElementById("order-menu")?"order-menu":"featured-menu";renderMenu(target,b.dataset.filter)}));
+renderMenu("featured-menu");renderMenu("order-menu");renderCart();
+const toggle=document.querySelector(".menu-toggle");if(toggle)toggle.addEventListener("click",()=>document.querySelector(".nav nav").classList.toggle("open"));
+const form=document.getElementById("checkout-form");if(form)form.addEventListener("submit",e=>{e.preventDefault();if(!Object.keys(cart).length){alert("Please add at least one item to your order.");return}let data=new FormData(form),lines=items.filter(x=>cart[x.id]).map(x=>`${x.name} x ${cart[x.id]} = ${money(x.price*cart[x.id])}`).join("\n"),subtotal=items.reduce((s,x)=>s+x.price*(cart[x.id]||0),0)+10;let msg=`Hello Urban Cafe! I'd like to place an order:\n${lines}\nTotal: ${money(subtotal)}\nName: ${data.get("name")}\nPhone: ${data.get("phone")}\nAddress: ${data.get("address")}\nPayment: ${data.get("payment")}`;let url="https://wa.me/916230013000?text="+encodeURIComponent(msg);if(data.get("payment")==="UPI"||data.get("payment")==="Card"){alert("This is a demo checkout. No online payment is processed. Your order details will open in WhatsApp so the cafe can confirm payment.");}window.open(url,"_blank")});
